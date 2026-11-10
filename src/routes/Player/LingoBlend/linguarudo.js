@@ -6,7 +6,7 @@
 //   POST /api/words/seen { lang, terms } → { updated }
 
 // Production Linguarudo. Self-host / dev: change it in the menu (e.g. http://localhost:5173).
-const DEFAULT_LINGUARUDO_URL = 'https://linguarudo.vercel.app';
+const DEFAULT_LINGUARUDO_URL = 'https://linguarudo-app.vercel.app';
 
 const QUEUE_KEY = 'lingoblend.linguarudoQueue';
 const SAVE_BATCH = 200;
