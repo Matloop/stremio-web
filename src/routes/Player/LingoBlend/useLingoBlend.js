@@ -5,6 +5,7 @@ const React = require('react');
 const lingoBlend = require('./api');
 const { createProvider, toSourceLang } = require('./provider');
 const { loadSettings, saveSettings, loadSavedWords, isWordSaved, saveWord, exportSavedWordsCSV } = require('./storage');
+const { listenCardDismiss } = require('./cardDismiss');
 
 const WORD_EVENT = 'lingoblend:word';
 const IDLE_STATUS = { state: 'idle', annotated: 0, total: 0 };
@@ -153,31 +154,20 @@ const useLingoBlend = ({ video, title }) => {
     }, [videoContainerRef, setPaused]);
 
     // While the card is open: Escape closes it (and must not reach the player's exit shortcut),
-    // a mousedown outside of it closes it.
+    // a mousedown outside of it closes it (see cardDismiss.js).
     const cardRef = React.useRef(null);
     const cardOpen = card !== null;
     React.useEffect(() => {
         if (!cardOpen) return;
 
-        const onKeyDown = (event) => {
-            if (event.key === 'Escape' || event.code === 'Escape') {
-                event.preventDefault();
-                event.stopPropagation();
-                closeCard();
-            }
-        };
-        const onMouseDown = (event) => {
-            if (cardRef.current && cardRef.current.contains(event.target)) return;
-            closeCard();
-        };
-
-        window.addEventListener('keydown', onKeyDown, true);
-        document.addEventListener('mousedown', onMouseDown);
-        return () => {
-            window.removeEventListener('keydown', onKeyDown, true);
-            document.removeEventListener('mousedown', onMouseDown);
-        };
-    }, [cardOpen, closeCard]);
+        return listenCardDismiss({
+            win: window,
+            doc: document,
+            isInsideCard: (target) => cardRef.current !== null && cardRef.current.contains(target),
+            isInsideVideo: (target) => videoContainerRef.current !== null && videoContainerRef.current.contains(target),
+            onClose: closeCard,
+        });
+    }, [cardOpen, closeCard, videoContainerRef]);
 
     return {
         available,

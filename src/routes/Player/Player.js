@@ -131,9 +131,14 @@ const Player = () => {
         nextVideoRemainingTime <= settings.nextVideoNotificationDuration;
     const [sideDrawerOpen, , closeSideDrawer, toggleSideDrawer] = useBinaryState(false);
 
-    const menusOpen = React.useMemo(() => {
-        return optionsMenuOpen || subtitlesMenuOpen || audioMenuOpen || speedMenuOpen || statisticsMenuOpen || castDevicesMenuOpen || sideDrawerOpen || nextVideoPopupOpen || lingoBlendMenuOpen || lingoBlend.cardOpen;
-    }, [optionsMenuOpen, subtitlesMenuOpen, audioMenuOpen, speedMenuOpen, statisticsMenuOpen, castDevicesMenuOpen, sideDrawerOpen, nextVideoPopupOpen, lingoBlendMenuOpen, lingoBlend.cardOpen]);
+    // Menus that put the transparent click-catcher layer over the video.
+    const menuLayerOpen = React.useMemo(() => {
+        return optionsMenuOpen || subtitlesMenuOpen || audioMenuOpen || speedMenuOpen || statisticsMenuOpen || castDevicesMenuOpen || sideDrawerOpen || nextVideoPopupOpen || lingoBlendMenuOpen;
+    }, [optionsMenuOpen, subtitlesMenuOpen, audioMenuOpen, speedMenuOpen, statisticsMenuOpen, castDevicesMenuOpen, sideDrawerOpen, nextVideoPopupOpen, lingoBlendMenuOpen]);
+    // LingoBlend: the word card counts as a menu (overlay stays visible, Space / wheel / hold are ignored) but does
+    // not get the click-catcher layer, which would cover the subtitle words: clicking another word would hit the
+    // layer, close the card and resume the video. Outside clicks are handled by LingoBlend/cardDismiss.js.
+    const menusOpen = menuLayerOpen || lingoBlend.cardOpen;
 
     const closeMenus = React.useCallback(() => {
         closeOptionsMenu();
@@ -1001,7 +1006,7 @@ const Player = () => {
                     null
             }
             {
-                menusOpen ?
+                menuLayerOpen ?
                     <div className={styles['layer']} />
                     :
                     null
