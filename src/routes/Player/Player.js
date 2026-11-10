@@ -41,6 +41,7 @@ const styles = require('./styles');
 const Video = require('./Video');
 const { default: Indicator } = require('./Indicator/Indicator');
 const { default: useMediaSession } = require('./useMediaSession');
+const { useLingoBlend, LingoBlendMenu, WordCard } = require('./LingoBlend');
 
 const GAMEPAD_HANDLER_ID = 'player';
 
@@ -105,6 +106,8 @@ const Player = () => {
     const [speedMenuOpen, , closeSpeedMenu, toggleSpeedMenu] = useBinaryState(false);
     const [statisticsMenuOpen, openStatisticsMenu, closeStatisticsMenu, toggleStatisticsMenu] = useBinaryState(false);
     const [castDevicesMenuOpen, , closeCastDevicesMenu, toggleCastDevicesMenu] = useBinaryState(false);
+    const [lingoBlendMenuOpen, , closeLingoBlendMenu, toggleLingoBlendMenu] = useBinaryState(false);
+    const lingoBlend = useLingoBlend({ video, title: player.title });
     const metaItemContent = player.metaItem !== null && player.metaItem.type === 'Ready' ? player.metaItem.content : null;
 
     const isEpg = (player.live ?? null) !== null;
@@ -129,8 +132,8 @@ const Player = () => {
     const [sideDrawerOpen, , closeSideDrawer, toggleSideDrawer] = useBinaryState(false);
 
     const menusOpen = React.useMemo(() => {
-        return optionsMenuOpen || subtitlesMenuOpen || audioMenuOpen || speedMenuOpen || statisticsMenuOpen || castDevicesMenuOpen || sideDrawerOpen || nextVideoPopupOpen;
-    }, [optionsMenuOpen, subtitlesMenuOpen, audioMenuOpen, speedMenuOpen, statisticsMenuOpen, castDevicesMenuOpen, sideDrawerOpen, nextVideoPopupOpen]);
+        return optionsMenuOpen || subtitlesMenuOpen || audioMenuOpen || speedMenuOpen || statisticsMenuOpen || castDevicesMenuOpen || sideDrawerOpen || nextVideoPopupOpen || lingoBlendMenuOpen || lingoBlend.cardOpen;
+    }, [optionsMenuOpen, subtitlesMenuOpen, audioMenuOpen, speedMenuOpen, statisticsMenuOpen, castDevicesMenuOpen, sideDrawerOpen, nextVideoPopupOpen, lingoBlendMenuOpen, lingoBlend.cardOpen]);
 
     const closeMenus = React.useCallback(() => {
         closeOptionsMenu();
@@ -140,7 +143,15 @@ const Player = () => {
         closeStatisticsMenu();
         closeCastDevicesMenu();
         closeSideDrawer();
+        closeLingoBlendMenu();
     }, []);
+
+    // LingoBlend: a word click is stopped by the subtitle span, so close the other menus explicitly.
+    React.useEffect(() => {
+        if (lingoBlend.card !== null) {
+            closeMenus();
+        }
+    }, [lingoBlend.card, closeMenus]);
 
     const castDevices = React.useMemo(() => {
         return playbackDevices
@@ -430,6 +441,9 @@ const Player = () => {
         }
         if (!event.nativeEvent.castDevicesMenuClosePrevented) {
             closeCastDevicesMenu();
+        }
+        if (!event.nativeEvent.lingoBlendMenuClosePrevented) {
+            closeLingoBlendMenu();
         }
 
         closeSideDrawer();
@@ -1066,6 +1080,13 @@ const Player = () => {
                 onVideoScaleChanged={onVideoScaleChanged}
                 onToggleStatisticsMenu={toggleStatisticsMenu}
                 onToggleSideDrawer={toggleSideDrawer}
+                lingoBlend={lingoBlend.available ? {
+                    label: lingoBlend.settings.targetLang.toUpperCase(),
+                    enabled: lingoBlend.settings.enabled,
+                    error: lingoBlend.settings.enabled && lingoBlend.status.state === 'error',
+                    status: lingoBlend.statusLabel,
+                } : null}
+                onToggleLingoBlendMenu={toggleLingoBlendMenu}
                 onMouseMove={onBarMouseMove}
                 onMouseOver={onBarMouseMove}
                 onTouchEnd={onContainerMouseLeave}
@@ -1142,6 +1163,31 @@ const Player = () => {
                     selectedExtraSubtitlesTrackId={selectedExtraSubtitleTrackId}
                 />
             </Transition>
+            <Transition when={lingoBlendMenuOpen} name={'fade'}>
+                <LingoBlendMenu
+                    className={classnames(styles['layer'], styles['menu-layer'])}
+                    available={lingoBlend.available}
+                    settings={lingoBlend.settings}
+                    status={lingoBlend.status}
+                    statusLabel={lingoBlend.statusLabel}
+                    savedCount={lingoBlend.savedCount}
+                    onSettingsChanged={lingoBlend.updateSettings}
+                    onExportCSV={lingoBlend.exportCSV}
+                />
+            </Transition>
+            {
+                lingoBlend.card !== null ?
+                    <WordCard
+                        key={lingoBlend.card.key}
+                        card={lingoBlend.card}
+                        containerRef={playerRef}
+                        cardRef={lingoBlend.cardRef}
+                        onSave={lingoBlend.saveCardWord}
+                        onClose={lingoBlend.closeCard}
+                    />
+                    :
+                    null
+            }
         </div>
     );
 };

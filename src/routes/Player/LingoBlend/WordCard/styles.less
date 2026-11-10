@@ -1,0 +1,144 @@
+// LingoBlend word card, see design/mockup.html (.pop)
+
+@cyan: #22d3ee;
+@cyan-light: #a5f3fc;
+@cyan-dark: #0891b2;
+@card-background: rgba(17, 24, 32, 0.96);
+@card-border: rgba(34, 211, 238, 0.45);
+
+.word-card {
+    position: absolute;
+    z-index: 1;
+    width: 18rem;
+    max-width: calc(100% - 1rem);
+    padding: 0.85rem 1rem;
+    border-radius: 0.75rem;
+    background-color: @card-background;
+    border: 1px solid @card-border;
+    box-shadow: 0 0.75rem 2rem rgba(0, 0, 0, 0.5);
+    color: #e6edf3;
+    text-align: left;
+    cursor: auto;
+
+    .target {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 0.6rem;
+        font-size: 1.45rem;
+        font-weight: 700;
+        color: @cyan-light;
+
+        .target-label {
+            overflow-wrap: anywhere;
+        }
+
+        .speak-button {
+            flex: none;
+            width: 1.6rem;
+            height: 1.6rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background-color: rgba(34, 211, 238, 0.18);
+            color: @cyan-light;
+            font-size: 0.75rem;
+            transition: background-color 150ms ease;
+
+            &:hover {
+                background-color: rgba(34, 211, 238, 0.32);
+            }
+        }
+    }
+
+    .details {
+        margin-top: 0.15rem;
+        font-size: 0.85rem;
+        color: #8b9bab;
+        font-family: monospace;
+    }
+
+    .source {
+        margin-top: 0.3rem;
+        font-size: 0.95rem;
+        color: #cbd5e1;
+
+        b {
+            color: #ffffff;
+        }
+    }
+
+    .meaning {
+        margin-top: 0.15rem;
+        font-size: 0.9rem;
+        color: #cbd5e1;
+    }
+
+    .example {
+        margin-top: 0.6rem;
+        padding-top: 0.6rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        font-size: 0.85rem;
+        font-style: italic;
+        color: #94a3b8;
+    }
+
+    .actions {
+        display: flex;
+        flex-direction: row;
+        gap: 0.4rem;
+        margin-top: 0.75rem;
+
+        .action {
+            flex: 1;
+            padding: 0.45rem;
+            border-radius: 0.4rem;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            background-color: rgba(255, 255, 255, 0.06);
+            color: #e6edf3;
+            font-size: 0.85rem;
+            text-align: center;
+            transition: background-color 150ms ease;
+
+            &:hover {
+                background-color: rgba(255, 255, 255, 0.12);
+            }
+
+            &.primary {
+                background-color: @cyan-dark;
+                border-color: @cyan-dark;
+                color: #ffffff;
+
+                &:hover {
+                    background-color: lighten(@cyan-dark, 6%);
+                }
+
+                &.saved {
+                    background-color: rgba(34, 211, 238, 0.18);
+                    border-color: @card-border;
+                    color: @cyan-light;
+                    cursor: default;
+                }
+            }
+        }
+    }
+
+    .arrow {
+        position: absolute;
+        bottom: -7px;
+        left: 50%;
+        width: 12px;
+        height: 12px;
+        background-color: @card-background;
+        border-right: 1px solid @card-border;
+        border-bottom: 1px solid @card-border;
+        transform: translateX(-50%) rotate(45deg);
+    }
+
+    &.below .arrow {
+        top: -7px;
+        bottom: auto;
+        transform: translateX(-50%) rotate(225deg);
+    }
+}

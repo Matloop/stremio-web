@@ -1,0 +1,194 @@
+// LingoBlend settings menu, styled like the other player menus (see SpeedMenu)
+
+:import('~stremio/components/Slider/styles.less') {
+    slider-thumb: thumb;
+    slider-track-after: track-after;
+}
+
+@cyan: #22d3ee;
+
+.lingoblend-menu-container {
+    width: 24rem;
+    max-width: 100%;
+    display: flex;
+    flex-direction: column;
+
+    .title {
+        flex: none;
+        align-self: stretch;
+        font-weight: 700;
+        padding: 1rem;
+        text-align: center;
+    }
+
+    .fields {
+        display: flex;
+        flex-direction: column;
+        padding: 0 1.25rem;
+
+        .field {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            min-height: 2.75rem;
+
+            .label {
+                flex: 1;
+                color: var(--primary-foreground-color);
+            }
+
+            .value {
+                font-weight: 700;
+                font-variant-numeric: tabular-nums;
+                color: @cyan;
+            }
+
+            .toggle {
+                flex: none;
+                outline: none;
+
+                &:global(.checked) > div {
+                    background-color: #0891b2;
+                }
+            }
+
+            .input {
+                flex: none;
+                max-width: 60%;
+                padding: 0.3rem 0.5rem;
+                border-radius: 0.4rem;
+                border: 1px solid rgba(255, 255, 255, 0.15);
+                background-color: rgba(255, 255, 255, 0.06);
+                color: var(--primary-foreground-color);
+                font: inherit;
+                font-size: 0.9rem;
+                outline: none;
+
+                &:focus {
+                    border-color: @cyan;
+                }
+
+                option {
+                    background-color: var(--modal-background-color);
+                    color: var(--primary-foreground-color);
+                }
+            }
+
+            .server-input {
+                width: 12rem;
+            }
+
+            &.density-field {
+                min-height: 2rem;
+            }
+        }
+
+        .slider {
+            --track-size: 0.35rem;
+            --thumb-size: 1rem;
+
+            flex: none;
+            min-height: calc(var(--thumb-size) * 2);
+            align-self: stretch;
+            margin: 0 var(--thumb-size) 0.25rem;
+            position: relative;
+
+            .slider-track-after {
+                background-color: @cyan;
+            }
+
+            .slider-thumb {
+                background-color: @cyan;
+                transition: transform 150ms ease;
+            }
+
+            &:hover .slider-thumb {
+                transform: translateX(-50%) scale(1.2);
+            }
+        }
+    }
+
+    .footer {
+        display: flex;
+        flex-direction: column;
+        gap: 0.6rem;
+        margin-top: 0.5rem;
+        padding: 0.85rem 1.25rem 1rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        font-size: 0.9rem;
+
+        .status {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--primary-foreground-color);
+            opacity: 0.8;
+
+            .status-dot {
+                flex: none;
+                width: 0.5rem;
+                height: 0.5rem;
+                border-radius: 50%;
+                background-color: rgba(255, 255, 255, 0.4);
+            }
+
+            &.status-loading .status-dot {
+                background-color: @cyan;
+                animation: pulse 1s ease-in-out infinite alternate;
+            }
+
+            &.status-ready .status-dot {
+                background-color: #22c55e;
+            }
+
+            &.status-error {
+                opacity: 1;
+                color: #fca5a5;
+
+                .status-dot {
+                    background-color: #ef4444;
+                }
+            }
+        }
+
+        .saved {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            color: var(--primary-foreground-color);
+
+            .export-button {
+                flex: none;
+                padding: 0.35rem 0.75rem;
+                border-radius: 0.4rem;
+                border: 1px solid rgba(255, 255, 255, 0.15);
+                background-color: rgba(255, 255, 255, 0.06);
+                transition: background-color 150ms ease;
+
+                &:hover {
+                    background-color: var(--overlay-color);
+                }
+
+                &:global(.disabled) {
+                    opacity: 0.4;
+                    pointer-events: none;
+                }
+            }
+        }
+    }
+}
+
+@keyframes pulse {
+    from {
+        opacity: 0.35;
+    }
+
+    to {
+        opacity: 1;
+    }
+}

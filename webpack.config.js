@@ -14,6 +14,10 @@ const packageJson = require('./package.json');
 
 const COMMIT_HASH = execSync('git rev-parse HEAD').toString().trim();
 
+// LingoBlend: @stremio/stremio-video is linked (link:../stremio-video), so it resolves to a real path
+// outside node_modules. Keep it out of babel, exactly like the npm package was.
+const STREMIO_VIDEO_PATH = path.dirname(require.resolve('@stremio/stremio-video/package.json'));
+
 const THREAD_LOADER = {
     loader: 'thread-loader',
     options: {
@@ -49,7 +53,7 @@ module.exports = (env, argv) => ({
         rules: [
             {
                 test: /\.js$/,
-                exclude: /node_modules/,
+                exclude: [/node_modules/, STREMIO_VIDEO_PATH],
                 use: [
                     THREAD_LOADER,
                     {
@@ -192,7 +196,7 @@ module.exports = (env, argv) => ({
         host: '0.0.0.0',
         static: false,
         hot: false,
-        server: 'https',
+        server: process.env.LINGOBLEND_HTTP ? 'http' : 'https',
         liveReload: false
     },
     optimization: {

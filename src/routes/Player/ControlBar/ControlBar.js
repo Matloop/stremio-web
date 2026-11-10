@@ -55,6 +55,8 @@ const ControlBar = React.forwardRef(({
     buffering,
     onVideoScaleChanged,
     onToggleStatisticsMenu,
+    lingoBlend,
+    onToggleLingoBlendMenu,
     onTouchEnd,
     ...props
 }, ref) => {
@@ -82,6 +84,9 @@ const ControlBar = React.forwardRef(({
     }, []);
     const onCastDevicesButtonMouseDown = React.useCallback((event) => {
         event.nativeEvent.castDevicesMenuClosePrevented = true;
+    }, []);
+    const onLingoBlendButtonMouseDown = React.useCallback((event) => {
+        event.nativeEvent.lingoBlendMenuClosePrevented = true;
     }, []);
     const onPlayPauseButtonClick = React.useCallback(() => {
         if (paused) {
@@ -203,6 +208,14 @@ const ControlBar = React.forwardRef(({
                     <Button className={classnames(styles['control-bar-button'], { 'disabled': !Array.isArray(subtitlesTracks) || subtitlesTracks.length === 0 })} tabIndex={-1} onMouseDown={onSubtitlesButtonMouseDown} onClick={onToggleSubtitlesMenu}>
                         <Icon className={styles['icon']} name={'subtitles'} />
                     </Button>
+                    {
+                        lingoBlend ?
+                            <Button className={classnames(styles['control-bar-button'], styles['lingoblend-button'], { [styles['enabled']]: lingoBlend.enabled, [styles['error']]: lingoBlend.error })} title={`LingoBlend: ${lingoBlend.status}`} tabIndex={-1} onMouseDown={onLingoBlendButtonMouseDown} onClick={onToggleLingoBlendMenu}>
+                                {lingoBlend.label}
+                            </Button>
+                            :
+                            null
+                    }
                     <Button className={classnames(styles['control-bar-button'], { 'disabled': !Array.isArray(audioTracks) || audioTracks.length === 0 })} tabIndex={-1} onMouseDown={onAudioButtonMouseDown} onClick={onToggleAudioMenu}>
                         <Icon className={styles['icon']} name={'audio-tracks'} />
                     </Button>
@@ -263,6 +276,13 @@ ControlBar.propTypes = {
     shellCastSupported: PropTypes.bool,
     onToggleCastDevicesMenu: PropTypes.func,
     onToggleStatisticsMenu: PropTypes.func,
+    lingoBlend: PropTypes.shape({
+        label: PropTypes.string,
+        enabled: PropTypes.bool,
+        error: PropTypes.bool,
+        status: PropTypes.string,
+    }),
+    onToggleLingoBlendMenu: PropTypes.func,
     onMouseOver: PropTypes.func,
     onMouseMove: PropTypes.func,
     onTouchEnd: PropTypes.func,

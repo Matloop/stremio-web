@@ -24,8 +24,8 @@ importers:
         specifier: 5.15.0
         version: 5.15.0
       '@stremio/stremio-video':
-        specifier: 0.0.103
-        version: 0.0.103
+        specifier: link:../stremio-video
+        version: link:../stremio-video
       bowser:
         specifier: 2.14.1
         version: 2.14.1
@@ -1437,10 +1437,6 @@ packages:
   '@sinonjs/fake-timers@10.3.0':
     resolution: {integrity: sha512-V4BG07kuYSUkTCSBHG8G8TNhM+F19jXFWnQtzj+we8DrkpSBCee9Z3Ms8yiGer/dlmhe35/Xdgyo3/0rQKg7YA==}
 
-  '@stremio/libass-wasm@https://github.com/Stremio/JavascriptSubtitlesOctopus/releases/download/v4.2.7/stremio-libass-wasm-4.2.7.tgz':
-    resolution: {integrity: sha512-0bL5W1gAbyecplk7tworqkGER2dmE4TJGXZAzxfjTrBNjqjY8mAzvgDZ62lzWd+pTMUdvIO+bI0B7Rq+JOHcXw==, tarball: https://github.com/Stremio/JavascriptSubtitlesOctopus/releases/download/v4.2.7/stremio-libass-wasm-4.2.7.tgz}
-    version: 4.2.7
-
   '@stremio/stremio-colors@5.2.0':
     resolution: {integrity: sha512-dYlPgu9W/H7c9s1zmW5tiDnRenaUa4Hg1QCyOg1lhOcgSfM/bVTi5nnqX+IfvGTTUNA0zgzh8hI3o3miwnZxTg==}
 
@@ -1449,9 +1445,6 @@ packages:
 
   '@stremio/stremio-icons@5.15.0':
     resolution: {integrity: sha512-UaYBgpJBaHZOPLhfZkAIzf99Xy62mxvEKOmeOeNmsSCSc05O05/FXihbA3zKefZBKN6cOy8uWBRGsCrXryV4zg==}
-
-  '@stremio/stremio-video@0.0.103':
-    resolution: {integrity: sha512-6Y/IfP8UgiPINTdJae8MaNiqCrE/oC1vtPbDr4cwBbLp32Oi6ud/+GrWstuEc4NezhWQ/0YspouzvMRCk3R5Vg==}
 
   '@stylistic/eslint-plugin-jsx@4.4.1':
     resolution: {integrity: sha512-83SInq4u7z71vWwGG+6ViOtlOmZ6tSrDkMPhrvdBBTGMLA0gs22WSdhQ4vZP3oJ5Xg4ythvqeUiFSedvVxzhyA==}
@@ -2071,13 +2064,6 @@ packages:
   color-name@1.1.4:
     resolution: {integrity: sha512-dOy+3AuW3a2wNbZHIuMZpTcgjGuLU/uBL/ubcZF9OXbDo8ff4O8yVp5Bf0efS8uEoYo5q4Fx7dY9OgQGXgAsQA==}
 
-  color-string@1.9.1:
-    resolution: {integrity: sha512-shrVawQFojnZv6xM40anx4CkoDP+fZsw/ZerEMsW/pyzsRbElpsL/DBVW7q3ExxwusdNXI3lXpuhEZkzs8p5Eg==}
-
-  color@4.2.3:
-    resolution: {integrity: sha512-1rXeuUUiGGrykh+CeBdu5Ie7OJwinCgQY0bc7GCRxy5xVHy+moaqkpL/jqQq0MtQOeYcrqEz4abc5f0KtU7W4A==}
-    engines: {node: '>=12.5.0'}
-
   colorette@2.0.20:
     resolution: {integrity: sha512-IfEDxwoWIjkeXL1eXcDiow4UbKjhLdq6/EuSVR9GMN7KVH3r9gQ83e73hsz1Nd1T3ijd5xv1wcWRYO+D6kCI2w==}
 
@@ -2279,9 +2265,6 @@ packages:
     peerDependenciesMeta:
       babel-plugin-macros:
         optional: true
-
-  deep-freeze@0.0.1:
-    resolution: {integrity: sha512-Z+z8HiAvsGwmjqlphnHW5oz6yWlOwu6EQfFTjmeTWlDeda3FS2yv3jhq35TX/ewmsnqB+RX2IdsIOyjJCQN5tg==}
 
   deep-is@0.1.4:
     resolution: {integrity: sha512-oIPzksmTg4/MriiaYGO+okXDT7ztn/w3Eptv/+gSIdMdKsJo0u4CfYNFJPy+4SKMuCqGw2wxnA+URMg3t8a/bQ==}
@@ -2847,10 +2830,6 @@ packages:
   hermes-parser@0.25.1:
     resolution: {integrity: sha512-6pEjquH3rqaI6cYAXYPcz9MS4rY6R4ngRgrgfDshRptUZIc3lw0MCIJIGDj9++mfySOuPTHB4nrSW99BCvOPIA==}
 
-  hls.js@https://github.com/Stremio/hls.js/releases/download/v1.5.4-patch2/hls.js-1.5.4-patch2.tgz:
-    resolution: {integrity: sha512-PvVzZI5Nd2X5ol4R+DVwfpjJtAJ4xKaEzDfIZObfzmWPOop94javQltDt9H92uQUiLIKjFm06Ngpjz0NEudL2Q==, tarball: https://github.com/Stremio/hls.js/releases/download/v1.5.4-patch2/hls.js-1.5.4-patch2.tgz}
-    version: 1.5.5-0.canary.9893
-
   hpack.js@2.1.6:
     resolution: {integrity: sha512-zJxVehUdMGIKsRaNt7apO2Gqp0BdqW5yaiGHXXmbpvxgBYVZnAql+BJb4RO5ad2MgpbZKn5G6nMnegrH1FcNYQ==}
 
@@ -2954,6 +2933,7 @@ packages:
   image-size@0.5.5:
     resolution: {integrity: sha512-6TDAlDPZxUFCv+fuOkIoXT/V/f3Qbq8e37p+YOiYrUv3v9cc3/6x78VdfPgFVaB9dZYeLUfKgHRebpkm/oP2VQ==}
     engines: {node: '>=0.10.0'}
+    deprecated: Please migrate to image-size@2.x
     hasBin: true
 
   import-fresh@3.3.1:
@@ -2998,9 +2978,6 @@ packages:
 
   is-arrayish@0.2.1:
     resolution: {integrity: sha512-zz06S8t0ozoDXMG+ube26zeCTNXcKIPJZJi8hBrF4idCLms4CG9QtK7qBl1boi5ODzFpjswb5JPmHCbMpjaYzg==}
-
-  is-arrayish@0.3.4:
-    resolution: {integrity: sha512-m6UrgzFVUYawGBh1dUsWR5M2Clqic9RVXC/9f8ceNlv2IcO9j9J/z8UoCLPqtsPBFNzEpfR3xftohbfqDx8EQA==}
 
   is-async-function@2.1.1:
     resolution: {integrity: sha512-9dgM/cZBnNvjzaMYHVoxxfPj2QXt22Ev7SuuPrs+xav0ukGB0S6d4ydZdEiM48kLx5kDV+QBPrpVnFyefL8kkQ==}
@@ -3404,7 +3381,7 @@ packages:
     engines: {node: '>=6'}
 
   langs@https://codeload.github.com/Stremio/nodejs-langs/tar.gz/e5a3af7d2dd556592cbfe7cf879c1064ed0081a1:
-    resolution: {gitHosted: true, tarball: https://codeload.github.com/Stremio/nodejs-langs/tar.gz/e5a3af7d2dd556592cbfe7cf879c1064ed0081a1}
+    resolution: {gitHosted: true, integrity: sha512-fWcYqaDF8BSwZUJq2snbXOsUPyOFz5tTdXcRGVX0nfHg7D/dpB1Xxmou6bRcfmF0pCHQv3dp6kb+MfH39n4IRg==, tarball: https://codeload.github.com/Stremio/nodejs-langs/tar.gz/e5a3af7d2dd556592cbfe7cf879c1064ed0081a1}
     version: 2.0.0
 
   launch-editor@2.13.2:
@@ -3454,9 +3431,6 @@ packages:
   locate-path@6.0.0:
     resolution: {integrity: sha512-iPZK6eYjbxRu3uB4/WZ3EsEIMJFMqAoopl3R+zuq0UjcAm/MO6KCweDgPfP3elTztoKP3KtnVHxTn2NHBSDVUw==}
     engines: {node: '>=10'}
-
-  lodash.clonedeep@4.5.0:
-    resolution: {integrity: sha512-H5ZhCF25riFd9uB5UCkVKo61m3S/xZk1x4wA6yp/L3RFP6Z/eHH1ymQcGLo7J3GMPfm0V/7m1tryHuGVxpqEBQ==}
 
   lodash.debounce@4.0.8:
     resolution: {integrity: sha512-FT1yDzDYEoYWhnSGnpE/4Kj1fLZkDFyqRb7fNt6FdYOSxlUWAtp42Eh6Wb0rGIv/m9Bgo7x4GhQbm5Ys4SG5ow==}
@@ -4445,9 +4419,6 @@ packages:
     resolution: {integrity: sha512-bzyZ1e88w9O1iNJbKnOlvYTrWPDl46O1bG0D3XInv+9tkPrxrN8jUUTiFlDkkmKWgn1M6CfIA13SuGqOa9Korw==}
     engines: {node: '>=14'}
 
-  simple-swizzle@0.2.4:
-    resolution: {integrity: sha512-nAu1WFPQSMNr2Zn9PGSZK9AGn4t/y97lEm+MXTtUDwfP0ksAIX4nO+6ruD9Jwut4C49SB1Ws+fbXsm/yScWOHw==}
-
   sisteransi@1.0.5:
     resolution: {integrity: sha512-bLGGlR1QxBcynn2d5YmDX4MGjlZvy2MRBDRNHLJ8VI6l6+9FUiyTFNJ0IveOSP0bcXgVDPRcfGqA0pjaqUpfVg==}
 
@@ -4493,7 +4464,7 @@ packages:
     deprecated: The work that was done in this beta branch won't be included in future versions
 
   spatial-navigation-polyfill@https://codeload.github.com/Stremio/spatial-navigation/tar.gz/64871b1422466f5f45d24ebc8bbd315b2ebab6a6:
-    resolution: {gitHosted: true, tarball: https://codeload.github.com/Stremio/spatial-navigation/tar.gz/64871b1422466f5f45d24ebc8bbd315b2ebab6a6}
+    resolution: {gitHosted: true, integrity: sha512-AQdN6X+KAF3J7agPKdu5oSmvICFTZBtA3DKNMM+TvX+H3eFL2hMQgUJ3I+vtUpfvy2MSUxv/dgAsu/dy45QG+Q==, tarball: https://codeload.github.com/Stremio/spatial-navigation/tar.gz/64871b1422466f5f45d24ebc8bbd315b2ebab6a6}
     version: 1.2.0
 
   spdy-transport@3.0.0:
@@ -4869,16 +4840,9 @@ packages:
     resolution: {integrity: sha512-BNGbWLfd0eUPabhkXUVm0j8uuvREyTh5ovRa/dyow/BqAbZJyC+5fU+IzQOzmAKzYqYRAISoRhdQr3eIZ/PXqg==}
     engines: {node: '>= 0.8'}
 
-  video-name-parser@1.4.6:
-    resolution: {integrity: sha512-ZdeYjh8X4ms1EzjY/UoiTZ6JWbi8SYyOPGY0jESSLq2BAmdc5sZHi+F8J19Qz0y7H1WSpaltojsCkO1p2dH4YA==}
-
   void-elements@3.1.0:
     resolution: {integrity: sha512-Dhxzh5HZuiHQhbvTW9AMetFfBHDMYpo23Uo9btPXgdYP+3T5S+p+jgNy7spra+veYhBP2dCSgxR/i2Y02h5/6w==}
     engines: {node: '>=0.10.0'}
-
-  vtt.js@https://codeload.github.com/jaruba/vtt.js/tar.gz/84d33d157848407d790d78423dacc41a096294f0:
-    resolution: {gitHosted: true, tarball: https://codeload.github.com/jaruba/vtt.js/tar.gz/84d33d157848407d790d78423dacc41a096294f0}
-    version: 0.13.0
 
   walker@1.0.8:
     resolution: {integrity: sha512-ts/8E8l5b7kY0vlWLewOkDXMmPdLcVV4GmOQLyxuSswIJsweeFZtAsMF7k1Nszz+TYBQrlYRmzOnr398y1JemQ==}
@@ -6575,8 +6539,6 @@ snapshots:
     dependencies:
       '@sinonjs/commons': 3.0.1
 
-  '@stremio/libass-wasm@https://github.com/Stremio/JavascriptSubtitlesOctopus/releases/download/v4.2.7/stremio-libass-wasm-4.2.7.tgz': {}
-
   '@stremio/stremio-colors@5.2.0': {}
 
   '@stremio/stremio-core-web@0.66.0':
@@ -6584,21 +6546,6 @@ snapshots:
       '@babel/runtime': 7.24.1
 
   '@stremio/stremio-icons@5.15.0': {}
-
-  '@stremio/stremio-video@0.0.103':
-    dependencies:
-      '@stremio/libass-wasm': https://github.com/Stremio/JavascriptSubtitlesOctopus/releases/download/v4.2.7/stremio-libass-wasm-4.2.7.tgz
-      buffer: 6.0.3
-      color: 4.2.3
-      deep-freeze: 0.0.1
-      eventemitter3: 4.0.7
-      hat: 0.0.3
-      hls.js: https://github.com/Stremio/hls.js/releases/download/v1.5.4-patch2/hls.js-1.5.4-patch2.tgz
-      lodash.clonedeep: 4.5.0
-      magnet-uri: 6.2.0
-      url: 0.11.4
-      video-name-parser: 1.4.6
-      vtt.js: https://codeload.github.com/jaruba/vtt.js/tar.gz/84d33d157848407d790d78423dacc41a096294f0
 
   '@stylistic/eslint-plugin-jsx@4.4.1(eslint@9.39.4(jiti@2.6.1))':
     dependencies:
@@ -7380,16 +7327,6 @@ snapshots:
 
   color-name@1.1.4: {}
 
-  color-string@1.9.1:
-    dependencies:
-      color-name: 1.1.4
-      simple-swizzle: 0.2.4
-
-  color@4.2.3:
-    dependencies:
-      color-convert: 2.0.1
-      color-string: 1.9.1
-
   colorette@2.0.20: {}
 
   commander@11.1.0: {}
@@ -7621,8 +7558,6 @@ snapshots:
       ms: 2.1.3
 
   dedent@1.7.2: {}
-
-  deep-freeze@0.0.1: {}
 
   deep-is@0.1.4: {}
 
@@ -8300,8 +8235,6 @@ snapshots:
     dependencies:
       hermes-estree: 0.25.1
 
-  hls.js@https://github.com/Stremio/hls.js/releases/download/v1.5.4-patch2/hls.js-1.5.4-patch2.tgz: {}
-
   hpack.js@2.1.6:
     dependencies:
       inherits: 2.0.4
@@ -8454,8 +8387,6 @@ snapshots:
       get-intrinsic: 1.3.0
 
   is-arrayish@0.2.1: {}
-
-  is-arrayish@0.3.4: {}
 
   is-async-function@2.1.1:
     dependencies:
@@ -9075,8 +9006,6 @@ snapshots:
   locate-path@6.0.0:
     dependencies:
       p-locate: 5.0.0
-
-  lodash.clonedeep@4.5.0: {}
 
   lodash.debounce@4.0.8: {}
 
@@ -10122,10 +10051,6 @@ snapshots:
 
   signal-exit@4.1.0: {}
 
-  simple-swizzle@0.2.4:
-    dependencies:
-      is-arrayish: 0.3.4
-
   sisteransi@1.0.5: {}
 
   slash@3.0.0: {}
@@ -10549,11 +10474,7 @@ snapshots:
 
   vary@1.1.2: {}
 
-  video-name-parser@1.4.6: {}
-
   void-elements@3.1.0: {}
-
-  vtt.js@https://codeload.github.com/jaruba/vtt.js/tar.gz/84d33d157848407d790d78423dacc41a096294f0: {}
 
   walker@1.0.8:
     dependencies:
