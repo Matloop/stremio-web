@@ -26,6 +26,32 @@
         flex-direction: column;
         padding: 0 1.25rem;
 
+        .section-title {
+            margin-top: 0.75rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            font-weight: 700;
+            color: var(--primary-foreground-color);
+        }
+
+        .bank-status {
+            padding-bottom: 0.25rem;
+            font-size: 0.85rem;
+            color: var(--primary-foreground-color);
+            opacity: 0.7;
+            overflow-wrap: anywhere;
+
+            &.bank-connected {
+                color: #22d3ee;
+                opacity: 1;
+            }
+
+            &.bank-error {
+                color: #f87171;
+                opacity: 1;
+            }
+        }
+
         .field {
             display: flex;
             flex-direction: row;

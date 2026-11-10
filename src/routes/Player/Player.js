@@ -1176,6 +1176,7 @@ const Player = () => {
                     status={lingoBlend.status}
                     statusLabel={lingoBlend.statusLabel}
                     savedCount={lingoBlend.savedCount}
+                    bank={lingoBlend.bank}
                     onSettingsChanged={lingoBlend.updateSettings}
                     onExportCSV={lingoBlend.exportCSV}
                 />

@@ -3,12 +3,12 @@
 const SETTINGS_KEY = 'lingoblend.settings';
 const SAVED_WORDS_KEY = 'lingoblend.savedWords';
 
+const { DEFAULT_LINGUARUDO_URL } = require('./linguarudo');
+
+// The Linguarudo bank has English and Italian.
 const TARGET_LANGUAGES = [
     { code: 'it', label: 'Italiano', voice: 'it-IT' },
-    { code: 'es', label: 'Espanhol', voice: 'es-ES' },
     { code: 'en', label: 'Inglês', voice: 'en-US' },
-    { code: 'fr', label: 'Francês', voice: 'fr-FR' },
-    { code: 'de', label: 'Alemão', voice: 'de-DE' },
 ];
 
 const DENSITY_MIN = 5;
@@ -20,6 +20,8 @@ const DEFAULT_SETTINGS = {
     density: 10,
     pauseOnClick: true,
     serverUrl: 'http://localhost:7979',
+    linguarudoUrl: DEFAULT_LINGUARUDO_URL,
+    linguarudoToken: '',
 };
 
 const readJSON = (key, fallback) => {
@@ -47,6 +49,8 @@ const sanitizeSettings = (value) => {
         if (Number.isFinite(value.density)) settings.density = Math.round(Math.min(DENSITY_MAX, Math.max(DENSITY_MIN, value.density)));
         if (typeof value.pauseOnClick === 'boolean') settings.pauseOnClick = value.pauseOnClick;
         if (typeof value.serverUrl === 'string' && value.serverUrl.trim().length > 0) settings.serverUrl = value.serverUrl.trim();
+        if (typeof value.linguarudoUrl === 'string' && value.linguarudoUrl.trim().length > 0) settings.linguarudoUrl = value.linguarudoUrl.trim();
+        if (typeof value.linguarudoToken === 'string') settings.linguarudoToken = value.linguarudoToken.trim();
     }
     return settings;
 };
@@ -98,6 +102,8 @@ const exportSavedWordsCSV = () => {
 const languageByCode = (code) => TARGET_LANGUAGES.find((language) => language.code === code) || null;
 
 module.exports = {
+    SAVED_WORDS_KEY,
+    sanitizeSettings,
     TARGET_LANGUAGES,
     DENSITY_MIN,
     DENSITY_MAX,

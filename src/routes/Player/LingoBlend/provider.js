@@ -101,8 +101,9 @@ const annotateBatch = async ({ serverUrl, body, signal }) => {
 };
 
 // getSettings(): current LingoBlend settings; getPosition(): playback position in [0, 1] or null;
-// onProgress({ done, total }): processed cues so far for the current request.
-const createProvider = ({ getSettings, getPosition, onProgress }) => {
+// onProgress({ done, total }): processed cues so far for the current request;
+// getPreferWords(): lemmas from the Linguarudo bank to swap first (learning / due), may be empty.
+const createProvider = ({ getSettings, getPosition, onProgress, getPreferWords = () => [] }) => {
     let currentController = null;
 
     const provider = async (request, update) => {
@@ -126,6 +127,7 @@ const createProvider = ({ getSettings, getPosition, onProgress }) => {
 
         const queue = prioritize(chunk(cues, BATCH_SIZE), getPosition());
         const sourceLang = toSourceLang(request.lang);
+        const preferWords = getPreferWords();
         const errors = [];
 
         const worker = async () => {
@@ -140,6 +142,7 @@ const createProvider = ({ getSettings, getPosition, onProgress }) => {
                             targetLang: settings.targetLang,
                             density: settings.density / 100,
                             cues: batch.cues,
+                            ...(Array.isArray(preferWords) && preferWords.length > 0 ? { preferWords } : {}),
                         },
                     });
                     if (signal.aborted) return;

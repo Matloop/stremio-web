@@ -10,11 +10,15 @@ const { TARGET_LANGUAGES, DENSITY_MIN, DENSITY_MAX } = require('../storage');
 const STRINGS = require('../strings');
 const styles = require('./styles');
 
-const LingoBlendMenu = React.forwardRef(({ className, available, settings, status, statusLabel, savedCount, onSettingsChanged, onExportCSV }, ref) => {
+const LingoBlendMenu = React.forwardRef(({ className, available, settings, status, statusLabel, savedCount, bank, onSettingsChanged, onExportCSV }, ref) => {
     const [density, setDensity] = React.useState(settings.density);
     const [serverUrl, setServerUrl] = React.useState(settings.serverUrl);
     React.useEffect(() => setDensity(settings.density), [settings.density]);
     React.useEffect(() => setServerUrl(settings.serverUrl), [settings.serverUrl]);
+    const [linguarudoUrl, setLinguarudoUrl] = React.useState(settings.linguarudoUrl);
+    const [linguarudoToken, setLinguarudoToken] = React.useState(settings.linguarudoToken);
+    React.useEffect(() => setLinguarudoUrl(settings.linguarudoUrl), [settings.linguarudoUrl]);
+    React.useEffect(() => setLinguarudoToken(settings.linguarudoToken), [settings.linguarudoToken]);
 
     const onMouseDown = React.useCallback((event) => {
         event.nativeEvent.lingoBlendMenuClosePrevented = true;
@@ -56,6 +60,27 @@ const LingoBlendMenu = React.forwardRef(({ className, available, settings, statu
         if (event.key === 'Enter') {
             event.currentTarget.blur();
         }
+    }, []);
+    const commitLinguarudoUrl = React.useCallback(() => {
+        const next = linguarudoUrl.trim();
+        if (next.length > 0 && next !== settings.linguarudoUrl) {
+            changeSettings({ linguarudoUrl: next });
+        } else {
+            setLinguarudoUrl(settings.linguarudoUrl);
+        }
+    }, [linguarudoUrl, settings.linguarudoUrl, changeSettings]);
+    const onLinguarudoUrlChange = React.useCallback((event) => {
+        setLinguarudoUrl(event.target.value);
+    }, []);
+    // Empty token = disconnect.
+    const commitLinguarudoToken = React.useCallback(() => {
+        const next = linguarudoToken.trim();
+        if (next !== settings.linguarudoToken) {
+            changeSettings({ linguarudoToken: next });
+        }
+    }, [linguarudoToken, settings.linguarudoToken, changeSettings]);
+    const onLinguarudoTokenChange = React.useCallback((event) => {
+        setLinguarudoToken(event.target.value);
     }, []);
 
     return (
@@ -105,6 +130,43 @@ const LingoBlendMenu = React.forwardRef(({ className, available, settings, statu
                         onKeyDown={onServerUrlKeyDown}
                     />
                 </div>
+                <div className={styles['section-title']}>{STRINGS.LINGUARUDO}</div>
+                <div className={styles['field']}>
+                    <span className={styles['label']}>{STRINGS.LINGUARUDO_URL_LABEL}</span>
+                    <input
+                        className={classnames(styles['input'], styles['server-input'])}
+                        type={'text'}
+                        spellCheck={false}
+                        aria-label={STRINGS.LINGUARUDO_URL}
+                        value={linguarudoUrl}
+                        onChange={onLinguarudoUrlChange}
+                        onBlur={commitLinguarudoUrl}
+                        onKeyDown={onServerUrlKeyDown}
+                    />
+                </div>
+                <div className={styles['field']}>
+                    <span className={styles['label']}>{STRINGS.LINGUARUDO_TOKEN_LABEL}</span>
+                    <input
+                        className={classnames(styles['input'], styles['server-input'])}
+                        type={'password'}
+                        autoComplete={'off'}
+                        spellCheck={false}
+                        aria-label={STRINGS.LINGUARUDO_TOKEN}
+                        placeholder={STRINGS.LINGUARUDO_TOKEN_PLACEHOLDER}
+                        value={linguarudoToken}
+                        onChange={onLinguarudoTokenChange}
+                        onBlur={commitLinguarudoToken}
+                        onKeyDown={onServerUrlKeyDown}
+                    />
+                </div>
+                {
+                    bank ?
+                        <div className={classnames(styles['bank-status'], styles[`bank-${bank.state}`])}>
+                            {STRINGS.LINGUARUDO_STATUS(bank)}
+                        </div>
+                        :
+                        null
+                }
             </div>
             <div className={styles['footer']}>
                 <div className={classnames(styles['status'], styles[`status-${available ? status.state : 'error'}`])}>
@@ -131,7 +193,15 @@ LingoBlendMenu.propTypes = {
         density: PropTypes.number,
         pauseOnClick: PropTypes.bool,
         serverUrl: PropTypes.string,
+        linguarudoUrl: PropTypes.string,
+        linguarudoToken: PropTypes.string,
     }).isRequired,
+    bank: PropTypes.shape({
+        state: PropTypes.string,
+        email: PropTypes.string,
+        error: PropTypes.string,
+        queued: PropTypes.number,
+    }),
     status: PropTypes.shape({
         state: PropTypes.string,
     }).isRequired,

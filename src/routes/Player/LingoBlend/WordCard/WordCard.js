@@ -5,6 +5,7 @@ const PropTypes = require('prop-types');
 const classnames = require('classnames');
 const { default: Button } = require('stremio/components/Button');
 const { languageByCode } = require('../storage');
+const { formatNextReview } = require('../linguarudo');
 const STRINGS = require('../strings');
 const styles = require('./styles');
 
@@ -49,7 +50,7 @@ const findAnchorRect = (card, container) => {
 };
 
 const WordCard = ({ className, card, containerRef, cardRef, onSave, onClose }) => {
-    const { annotation, targetLang, saved } = card;
+    const { annotation, targetLang, saved, pending, bankWord } = card;
     const [position, setPosition] = React.useState(null);
 
     const updatePosition = React.useCallback(() => {
@@ -153,9 +154,19 @@ const WordCard = ({ className, card, containerRef, cardRef, onSave, onClose }) =
                     null
             }
             <div className={styles['actions']}>
-                <Button className={classnames(styles['action'], styles['primary'], { [styles['saved']]: saved })} tabIndex={-1} onClick={onSave}>
-                    {saved ? STRINGS.SAVED : STRINGS.SAVE_WORD}
-                </Button>
+                {
+                    bankWord ?
+                        <div className={styles['bank']}>
+                            <span className={styles['bank-badge']}>{STRINGS.IN_BANK}</span>
+                            <span className={styles['bank-next']}>
+                                {bankWord.paused ? STRINGS.PAUSED_IN_REVIEW : STRINGS.NEXT_REVIEW(formatNextReview(bankWord.dueAt))}
+                            </span>
+                        </div>
+                        :
+                        <Button className={classnames(styles['action'], styles['primary'], { [styles['saved']]: saved })} tabIndex={-1} onClick={onSave}>
+                            {saved ? (pending ? STRINGS.SAVED_PENDING : STRINGS.SAVED) : STRINGS.SAVE_WORD}
+                        </Button>
+                }
                 <Button className={styles['action']} tabIndex={-1} onClick={onClose}>
                     {STRINGS.CONTINUE}
                 </Button>
@@ -175,6 +186,11 @@ WordCard.propTypes = {
         targetLang: PropTypes.string,
         sourceLang: PropTypes.string,
         saved: PropTypes.bool,
+        pending: PropTypes.bool,
+        bankWord: PropTypes.shape({
+            dueAt: PropTypes.string,
+            paused: PropTypes.bool,
+        }),
     }).isRequired,
     containerRef: PropTypes.object.isRequired,
     cardRef: PropTypes.object.isRequired,
