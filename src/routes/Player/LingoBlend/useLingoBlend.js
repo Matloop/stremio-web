@@ -11,9 +11,12 @@ const {
     createSaveQueue,
     flushQueue,
     createSeenTracker,
-    toApiWord,
+    newClientId,
+    toApiWork,
+    toApiItem,
     fromSavedWord,
     indexBank,
+    applySaveResults,
     preferWordsOf,
 } = require('./linguarudo');
 
@@ -70,7 +73,7 @@ const getStatusLabel = (available, settings, status, progress) => {
     }
 };
 
-const useLingoBlend = ({ video, title }) => {
+const useLingoBlend = ({ video, title, metaItem, seriesInfo }) => {
     const available = lingoBlend !== null;
     const { containerRef: videoContainerRef, setPaused } = video;
     const [settings, setSettings] = React.useState(loadSettings);
@@ -88,6 +91,8 @@ const useLingoBlend = ({ video, title }) => {
     videoStateRef.current = video.state;
     const titleRef = React.useRef(title);
     titleRef.current = title;
+    const workRef = React.useRef(null);
+    workRef.current = toApiWork({ metaItem, seriesInfo, title });
     const pausedByCardRef = React.useRef(false);
 
     // Linguarudo: connection, bank of the current target language, words to swap first.
@@ -149,9 +154,9 @@ const useLingoBlend = ({ video, title }) => {
         };
     }, [available]);
 
-    const applyBank = React.useCallback((words) => {
-        bankRef.current = indexBank(words);
-        const prefer = preferWordsOf(words).sort();
+    const applyBank = React.useCallback(({ items, preferWords }) => {
+        bankRef.current = indexBank(items);
+        const prefer = preferWordsOf(preferWords);
         const changed = prefer.join('\n') !== preferRef.current.join('\n');
         preferRef.current = prefer;
         // Annotations already on screen were picked without the bank: ask again.
@@ -170,13 +175,7 @@ const useLingoBlend = ({ video, title }) => {
         }
         try {
             const results = await flushQueue({ queue, api: linguarudoApi, conn });
-            for (const result of results) {
-                if (result.status !== 'invalid' && result.lang === settingsRef.current.targetLang) {
-                    const key = result.term.toLowerCase();
-                    const previous = bankRef.current.get(key);
-                    bankRef.current.set(key, { ...previous, term: result.term, state: result.state, dueAt: result.dueAt, paused: previous ? previous.paused : false });
-                }
-            }
+            applySaveResults(bankRef.current, results, settingsRef.current.targetLang);
             return results;
         } finally {
             setQueued(queue.items().length);
@@ -185,11 +184,11 @@ const useLingoBlend = ({ video, title }) => {
 
     const flushSeen = React.useCallback((extra) => {
         const conn = connRef.current;
-        const terms = seenRef.current.take();
-        if (conn === null || terms.length === 0) return;
-        const lang = settingsRef.current.targetLang;
-        for (let i = 0; i < terms.length; i += SEEN_BATCH) {
-            linguarudoApi.markSeen(conn, lang, terms.slice(i, i + SEEN_BATCH), extra).catch((error) => {
+        const lemmas = seenRef.current.take();
+        if (conn === null || lemmas.length === 0) return;
+        const language = settingsRef.current.targetLang;
+        for (let i = 0; i < lemmas.length; i += SEEN_BATCH) {
+            linguarudoApi.markSeen(conn, language, lemmas.slice(i, i + SEEN_BATCH), extra).catch((error) => {
                 console.warn('LingoBlend: unable to send seen words', error);
             });
         }
@@ -201,7 +200,7 @@ const useLingoBlend = ({ video, title }) => {
         if (!token) {
             connRef.current = null;
             setBank(BANK_OFF);
-            applyBank([]);
+            applyBank({ items: [], preferWords: [] });
             return;
         }
 
@@ -217,13 +216,13 @@ const useLingoBlend = ({ video, title }) => {
                 const { email } = await linguarudoApi.me(conn);
                 if (cancelled) return;
                 if (needsMigration(conn)) {
-                    queueRef.current.add(loadSavedWords().map(fromSavedWord).filter(Boolean));
+                    queueRef.current.add(loadSavedWords().map((saved) => fromSavedWord(saved, newClientId())).filter(Boolean));
                     markMigrated(conn);
                 }
                 await flushSaves().catch((error) => console.warn('LingoBlend: queue kept for later', error));
-                const { words } = await linguarudoApi.listWords(conn, lang);
+                const listed = await linguarudoApi.listItems(conn, lang);
                 if (cancelled) return;
-                applyBank(words);
+                applyBank(listed);
                 setBank({ state: 'connected', email, error: null });
             } catch (error) {
                 if (cancelled) return;
@@ -304,15 +303,16 @@ const useLingoBlend = ({ video, title }) => {
             return;
         }
         // To the bank: queued first, so a failed request is retried later.
-        queueRef.current.add([toApiWord({
+        queueRef.current.add([toApiItem({
             annotation,
             targetLang: card.targetLang,
             displayText: card.displayText,
             cueText: card.cueText,
             shownText: card.shownText,
-            title,
             timeMs: card.timeMs,
-            savedAt,
+            seenAt: savedAt,
+            clientId: newClientId(),
+            work: workRef.current,
         })]);
         setQueued(queueRef.current.items().length);
         const key = card.key;

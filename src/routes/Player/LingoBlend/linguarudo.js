@@ -1,16 +1,15 @@
 // LingoBlend ↔ Linguarudo: the word bank behind the token pasted in the menu.
-// API (Linguarudo /api, Authorization: Bearer):
-//   GET  /api/me                     → { email }
-//   GET  /api/words?lang=it          → { words: [{ term, translation, state, dueAt, paused, prefer }] }
-//   POST /api/words { words }        → { results: [{ term, lang, status: created|duplicate|invalid, state, dueAt }] }
-//   POST /api/words/seen { lang, terms } → { updated }
+// API v1 (Linguarudo /api/v1, Authorization: Bearer; contract in linguarudo/packages/stremio-server/docs/CONTRACT.md §5):
+//   GET  /api/v1/me                              → { email, nativeLanguage, studyLanguages }
+//   GET  /api/v1/items?language=it               → { language, items: [ApiItem], preferWords: [lemma] }
+//   POST /api/v1/items { items: [SaveItem] }     → { results: [{ ok: true, item } | { ok: false, error }] }
+//   POST /api/v1/items/seen { language, lemmas } → { updated }
 
 // Production Linguarudo. Self-host / dev: change it in the menu (e.g. http://localhost:5173).
 const DEFAULT_LINGUARUDO_URL = 'https://linguarudo-app.vercel.app';
 
 const QUEUE_KEY = 'lingoblend.linguarudoQueue';
 const SAVE_BATCH = 200;
-const BANK_LANGS = ['en', 'it'];
 
 const apiBaseUrl = (url) => {
     const value = typeof url === 'string' ? url.trim().replace(/\/+$/, '') : '';
@@ -23,7 +22,7 @@ const createLinguarudoApi = ({ fetchImpl = (...args) => fetch(...args) } = {}) =
         if (body !== undefined) headers['Content-Type'] = 'application/json';
         let response;
         try {
-            response = await fetchImpl(`${apiBaseUrl(url)}/api${path}`, {
+            response = await fetchImpl(`${apiBaseUrl(url)}/api/v1${path}`, {
                 method,
                 headers,
                 body: body !== undefined ? JSON.stringify(body) : undefined,
@@ -47,53 +46,103 @@ const createLinguarudoApi = ({ fetchImpl = (...args) => fetch(...args) } = {}) =
 
     return {
         me: (conn) => request(conn, 'GET', '/me'),
-        listWords: (conn, lang) => request(conn, 'GET', `/words?lang=${encodeURIComponent(lang)}`),
-        saveWords: (conn, words) => request(conn, 'POST', '/words', { words }),
+        listItems: (conn, language) => request(conn, 'GET', `/items?language=${encodeURIComponent(language)}`),
+        saveItems: (conn, items) => request(conn, 'POST', '/items', { items }),
         // keepalive: also used when the player closes.
-        markSeen: (conn, lang, terms, extra) => request(conn, 'POST', '/words/seen', { lang, terms }, extra),
+        markSeen: (conn, language, lemmas, extra) => request(conn, 'POST', '/items/seen', { language, lemmas }, extra),
     };
 };
 
 const str = (value) => (typeof value === 'string' ? value : '');
 
-// Card click → word for the bank. The term is the lemma ("festa"); the form seen on screen ("feste")
-// stays in the context (the mixed line) and in contextHighlight, so Revisar can highlight it.
-const toApiWord = ({ annotation, targetLang, displayText, cueText, shownText, title, timeMs, savedAt }) => {
+// Idempotency key of an encounter: a retried save does not create a second one.
+const newClientId = () => {
+    const { crypto } = globalThis;
+    if (typeof crypto.randomUUID === 'function') return crypto.randomUUID();
+    // randomUUID only exists in secure contexts.
+    const bytes = crypto.getRandomValues(new Uint8Array(16));
+    bytes[6] = (bytes[6] & 0x0f) | 0x40;
+    bytes[8] = (bytes[8] & 0x3f) | 0x80;
+    const hex = Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
+    return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+};
+
+// The episode or film being watched, from the player's metaItem (stremio-core) and seriesInfo.
+const toApiWork = ({ metaItem, seriesInfo, title }) => {
+    const name = str(metaItem && metaItem.name) || str(title);
+    if (name.length === 0) return null;
+    const episode = seriesInfo && Number.isInteger(seriesInfo.season) && Number.isInteger(seriesInfo.episode) ? seriesInfo : null;
+    const id = str(metaItem && metaItem.id);
+    const refs = {};
+    if (/^tt\d+$/.test(id)) {
+        refs.imdbId = id;
+        if (episode !== null) {
+            refs.season = episode.season;
+            refs.episode = episode.episode;
+        }
+    }
+    const kind = metaItem && metaItem.type === 'movie' ? 'filme' : episode !== null ? 'episodio' : 'video';
+    return {
+        kind,
+        title: name,
+        subtitle: kind === 'episodio' ? `T${episode.season}E${episode.episode}` : '',
+        refs,
+    };
+};
+
+// Card click → item for the bank. The lemma is the dictionary form ("festa"); the form seen on screen
+// ("feste") goes to the encounter, with the mixed line, so Revisar can highlight it.
+const toApiItem = ({ annotation, targetLang, displayText, cueText, shownText, timeMs, seenAt, clientId, work }) => {
     const target = str(annotation.target);
-    const time = Number.isFinite(timeMs) && timeMs >= 0 ? Math.floor(timeMs / 1000) : null;
-    return {
-        term: str(annotation.lemma) || target,
-        lang: targetLang,
-        translation: str(annotation.meaning) || str(annotation.source),
-        context: str(displayText) || str(cueText),
-        contextHighlight: str(shownText) || target,
+    const form = str(shownText) || target;
+    const item = {
+        language: targetLang,
+        lemma: str(annotation.lemma) || target,
+        sense: str(annotation.meaning) || str(annotation.source),
         ipa: str(annotation.ipa),
-        pos: str(annotation.pos),
-        meaning: str(annotation.meaning),
-        example: str(annotation.example),
-        sourceTitle: str(title),
-        sourceTimeS: time,
-        savedAt,
+        partOfSpeech: str(annotation.pos),
+        encounter: {
+            form,
+            sentence: str(displayText) || str(cueText),
+            highlight: form,
+            sense: str(annotation.source),
+            position: Number.isFinite(timeMs) && timeMs >= 0 ? { seconds: Math.floor(timeMs / 1000) } : {},
+            seenAt,
+            clientId,
+            origin: 'stremio',
+        },
     };
+    if (work) item.work = work;
+    return item;
 };
 
-// Old local format (lingoblend.savedWords, before the bank): no lemma, cueText is the original line.
-const fromSavedWord = (saved) => {
-    if (!saved || !BANK_LANGS.includes(saved.targetLang) || str(saved.target).length === 0) return null;
-    return {
-        term: saved.target,
-        lang: saved.targetLang,
-        translation: str(saved.meaning) || str(saved.source),
-        context: str(saved.cueText),
-        contextHighlight: '',
-        meaning: str(saved.meaning),
-        example: str(saved.example),
-        sourceTitle: str(saved.title),
-        savedAt: str(saved.savedAt) || undefined,
+// Old local format (lingoblend.savedWords, before the bank): no lemma (the lemma is the form seen),
+// cueText is the original line, so there is nothing to highlight in it.
+const fromSavedWord = (saved, clientId) => {
+    if (!saved || str(saved.targetLang).length === 0 || str(saved.target).length === 0) return null;
+    const item = {
+        language: saved.targetLang,
+        lemma: saved.target,
+        sense: str(saved.meaning) || str(saved.source),
+        encounter: {
+            form: saved.target,
+            sentence: str(saved.cueText),
+            highlight: '',
+            sense: str(saved.source),
+            seenAt: str(saved.savedAt) || null,
+            clientId,
+            origin: 'stremio',
+        },
     };
+    if (str(saved.title).length > 0) item.work = { kind: 'video', title: saved.title };
+    return item;
 };
 
-const wordKey = (lang, term) => `${lang}\u0000${String(term).toLowerCase()}`;
+// One entry per encounter (clientId); an item without encounter is unique by language + lemma.
+const queueKey = (item) => {
+    const clientId = item.encounter && str(item.encounter.clientId);
+    return clientId ? `c\u0000${clientId}` : `l\u0000${item.language}\u0000${String(item.lemma).toLowerCase()}`;
+};
 
 // Saves that did not reach the server wait here (localStorage) and are retried.
 const createSaveQueue = ({ storage, key = QUEUE_KEY }) => {
@@ -115,47 +164,79 @@ const createSaveQueue = ({ storage, key = QUEUE_KEY }) => {
     };
     return {
         items: read,
-        add: (words) => {
+        add: (entries) => {
             const items = read();
-            const keys = new Set(items.map((w) => wordKey(w.lang, w.term)));
-            for (const word of words) {
-                const k = wordKey(word.lang, word.term);
+            const keys = new Set(items.map(queueKey));
+            for (const entry of entries) {
+                const k = queueKey(entry);
                 if (!keys.has(k)) {
                     keys.add(k);
-                    items.push(word);
+                    items.push(entry);
                 }
             }
             write(items);
         },
-        remove: (words) => {
-            const done = new Set(words);
+        remove: (entries) => {
+            const done = new Set(entries);
             write(read().filter((w) => !done.has(JSON.stringify(w))));
         },
     };
 };
 
-// Sends the queue in batches. Answered items (created / duplicate / invalid) leave the queue;
+// Sends the queue in batches. Answered items (ok or refused) leave the queue;
 // a network error or a non-OK answer stops and keeps the rest for the next try.
 const flushQueue = async ({ queue, api, conn }) => {
     const all = [];
     for (;;) {
         const batch = queue.items().slice(0, SAVE_BATCH);
         if (batch.length === 0) return all;
-        const { results } = await api.saveWords(conn, batch);
+        const { results } = await api.saveItems(conn, batch);
         queue.remove(batch.map((w) => JSON.stringify(w)));
         all.push(...(Array.isArray(results) ? results : []));
     }
 };
 
-const indexBank = (words) => {
+const earliestDue = (cards) => {
+    let earliest = null;
+    for (const card of Array.isArray(cards) ? cards : []) {
+        if (card && typeof card.dueAt === 'string' && (earliest === null || Date.parse(card.dueAt) < Date.parse(earliest))) {
+            earliest = card.dueAt;
+        }
+    }
+    return earliest;
+};
+
+// What the word card needs from an ApiItem: known (out of the review) or the next review.
+const bankEntry = (item) => ({
+    id: item.id,
+    lemma: item.lemma,
+    known: item.status === 'conhecido',
+    dueAt: earliestDue(item.cards),
+});
+
+// Bank of one language, by lemma without case.
+const indexBank = (items) => {
     const bank = new Map();
-    for (const word of Array.isArray(words) ? words : []) {
-        if (word && typeof word.term === 'string') bank.set(word.term.toLowerCase(), word);
+    for (const item of Array.isArray(items) ? items : []) {
+        if (item && typeof item.lemma === 'string') bank.set(item.lemma.toLowerCase(), bankEntry(item));
     }
     return bank;
 };
 
-const preferWordsOf = (words) => (Array.isArray(words) ? words : []).filter((w) => w && w.prefer).map((w) => w.term.toLowerCase());
+// Saved items of the bank's language go into it, so a second click shows "No seu banco".
+const applySaveResults = (bank, results, language) => {
+    for (const result of Array.isArray(results) ? results : []) {
+        if (!result || !result.ok || !result.item || result.item.language !== language) continue;
+        const { id, lemma, card } = result.item;
+        const key = lemma.toLowerCase();
+        const previous = bank.get(key);
+        bank.set(key, previous ? { ...previous, id, lemma } : { id, lemma, known: false, dueAt: card ? card.dueAt : null });
+    }
+    return bank;
+};
+
+// preferWords from the server, as /annotate expects them: lowercase, unique, sorted.
+const preferWordsOf = (preferWords) => [...new Set((Array.isArray(preferWords) ? preferWords : []).filter((w) => typeof w === 'string').map((w) => w.toLowerCase()))].sort();
 
 // "Visto": bank words that showed up in a subtitle. stremio-video emits 'shown' on every render of a
 // cue, so each (request, cue, lemma) counts once.
@@ -165,18 +246,18 @@ const createSeenTracker = () => {
     return {
         note: ({ requestId, cueId, annotations }, bank) => {
             for (const annotation of Array.isArray(annotations) ? annotations : []) {
-                const term = (str(annotation.lemma) || str(annotation.target)).toLowerCase();
-                if (!term || !bank.has(term)) continue;
-                const k = `${requestId}\u0000${cueId}\u0000${term}`;
+                const lemma = (str(annotation.lemma) || str(annotation.target)).toLowerCase();
+                if (!lemma || !bank.has(lemma)) continue;
+                const k = `${requestId}\u0000${cueId}\u0000${lemma}`;
                 if (noted.has(k)) continue;
                 noted.add(k);
-                pending.add(term);
+                pending.add(lemma);
             }
         },
         take: () => {
-            const terms = [...pending];
+            const lemmas = [...pending];
             pending = new Set();
-            return terms;
+            return lemmas;
         },
     };
 };
@@ -186,7 +267,7 @@ const pad = (n) => String(n).padStart(2, '0');
 // "agora", "hoje às 18:05", "amanhã às 09:00", "em 5 dias" (local time of the player).
 const formatNextReview = (dueAt, now = new Date()) => {
     const at = new Date(dueAt);
-    if (Number.isNaN(at.getTime())) return '';
+    if (dueAt === null || Number.isNaN(at.getTime())) return '';
     if (at.getTime() <= now.getTime()) return 'agora';
     const days = Math.round((Date.UTC(at.getFullYear(), at.getMonth(), at.getDate()) - Date.UTC(now.getFullYear(), now.getMonth(), now.getDate())) / 86400000);
     const time = `${pad(at.getHours())}:${pad(at.getMinutes())}`;
@@ -197,15 +278,17 @@ const formatNextReview = (dueAt, now = new Date()) => {
 
 module.exports = {
     DEFAULT_LINGUARUDO_URL,
-    BANK_LANGS,
     apiBaseUrl,
     createLinguarudoApi,
-    toApiWord,
+    newClientId,
+    toApiWork,
+    toApiItem,
     fromSavedWord,
     createSaveQueue,
     flushQueue,
-    createSeenTracker,
     indexBank,
+    applySaveResults,
     preferWordsOf,
+    createSeenTracker,
     formatNextReview,
 };

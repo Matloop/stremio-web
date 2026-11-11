@@ -159,7 +159,7 @@ const WordCard = ({ className, card, containerRef, cardRef, onSave, onClose }) =
                         <div className={styles['bank']}>
                             <span className={styles['bank-badge']}>{STRINGS.IN_BANK}</span>
                             <span className={styles['bank-next']}>
-                                {bankWord.paused ? STRINGS.PAUSED_IN_REVIEW : STRINGS.NEXT_REVIEW(formatNextReview(bankWord.dueAt))}
+                                {bankWord.known ? STRINGS.KNOWN : STRINGS.NEXT_REVIEW(formatNextReview(bankWord.dueAt))}
                             </span>
                         </div>
                         :
@@ -189,7 +189,7 @@ WordCard.propTypes = {
         pending: PropTypes.bool,
         bankWord: PropTypes.shape({
             dueAt: PropTypes.string,
-            paused: PropTypes.bool,
+            known: PropTypes.bool,
         }),
     }).isRequired,
     containerRef: PropTypes.object.isRequired,

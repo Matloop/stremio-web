@@ -26,7 +26,7 @@ module.exports = {
     SAVED_PENDING: '✓ Salva · envio pendente',
     IN_BANK: 'No seu banco',
     NEXT_REVIEW: (when) => `Próxima revisão: ${when}`,
-    PAUSED_IN_REVIEW: 'Pausada na revisão',
+    KNOWN: 'Você já conhece',
     LINGUARUDO: 'Linguarudo',
     LINGUARUDO_URL: 'URL do Linguarudo',
     LINGUARUDO_URL_LABEL: 'URL',

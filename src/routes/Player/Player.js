@@ -107,8 +107,8 @@ const Player = () => {
     const [statisticsMenuOpen, openStatisticsMenu, closeStatisticsMenu, toggleStatisticsMenu] = useBinaryState(false);
     const [castDevicesMenuOpen, , closeCastDevicesMenu, toggleCastDevicesMenu] = useBinaryState(false);
     const [lingoBlendMenuOpen, , closeLingoBlendMenu, toggleLingoBlendMenu] = useBinaryState(false);
-    const lingoBlend = useLingoBlend({ video, title: player.title });
     const metaItemContent = player.metaItem !== null && player.metaItem.type === 'Ready' ? player.metaItem.content : null;
+    const lingoBlend = useLingoBlend({ video, title: player.title, metaItem: metaItemContent, seriesInfo: player.seriesInfo });
 
     const isEpg = (player.live ?? null) !== null;
     const currentEpgVideo = player.live?.currentProgram ?? null;
